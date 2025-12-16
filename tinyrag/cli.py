@@ -9,6 +9,7 @@ import threading
 import time
 import webbrowser
 
+import httpx
 import typer
 import uvicorn
 
@@ -32,16 +33,34 @@ def ui(
 
     if not no_browser:
 
-        def open_browser():
-            time.sleep(2)
+        def wait_and_open_browser():
+            base_url = f"http://{host}:{port}"
+            max_retries = 60
+            retry_count = 0
+            
+            while retry_count < max_retries:
+                try:
+                    response = httpx.get(f"{base_url}/ready", timeout=1)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get("ready"):
+                            webbrowser.open(base_url)
+                            typer.echo(f"Opening {base_url} in browser...")
+                            return
+                except Exception:
+                    pass
+                
+                time.sleep(0.5)
+                retry_count += 1
+            
+            # Timeout reached, open browser anyway
             try:
-                url = f"http://{host}:{port}"
-                webbrowser.open(url)
-                typer.echo(f"Opening {url} in browser...")
+                webbrowser.open(base_url)
+                typer.echo(f"Opening {base_url} in browser (timeout waiting for ready)...")
             except Exception as e:
                 typer.echo(f"Could not open browser: {e}")
 
-        thread = threading.Thread(target=open_browser, daemon=True)
+        thread = threading.Thread(target=wait_and_open_browser, daemon=True)
         thread.start()
 
     typer.echo(f"Starting TinyRAG UI on http://{host}:{port}")
@@ -62,7 +81,10 @@ def server(
 @app.command()
 def mcp():
     """Start MCP client"""
-    service = os.getenv("LLM_SERVICE", "openai")
+    service = os.getenv("CHAT_SERVICE")
+    if not service:
+        typer.echo("Error: CHAT_SERVICE environment variable is not set")
+        raise typer.Exit(1)
     asyncio.run(amain(service))
 
 

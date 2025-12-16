@@ -18,10 +18,11 @@ from mcp.server.fastmcp import FastMCP
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-llm_service = os.getenv("LLM_SERVICE")
-if not llm_service:
-    raise ValueError("LLM_SERVICE environment variable is not set")
-rag_service = RAGService(llm_service)
+chat_service = os.getenv("CHAT_SERVICE")
+if not chat_service:
+    raise ValueError("CHAT_SERVICE environment variable is not set")
+embed_service = os.getenv("EMBED_SERVICE") or chat_service
+rag_service = RAGService(llm_service=embed_service)
 
 
 @asynccontextmanager

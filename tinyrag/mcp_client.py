@@ -26,22 +26,21 @@ logger = logging.getLogger(__name__)
 
 
 class SpeakerMcpClient:
-    def __init__(self, llm_service: Optional[str] = None):
-        llm_service = os.getenv("LLM_SERVICE")
-        if not llm_service:
-            raise ValueError("LLM_SERVICE environment variable is not set")
+    def __init__(self, chat_service: Optional[str] = None):
+        self.chat_service = chat_service or os.getenv("CHAT_SERVICE")
+        if not self.chat_service:
+            raise ValueError("CHAT_SERVICE environment variable is not set")
         self._mcp_session: Optional[ClientSession] = None
         self._session_context: Optional[ClientSession] = None
         self._stdio_context: Optional[StdioServerParameters] = None
 
         self.tools: Optional[List[Dict[str, Any]]] = None
 
-        self.llm_service = llm_service
         self.chat_client: IChatClient = None
-        model = chat_models.get(self.llm_service)
+        model = chat_models.get(self.chat_service)
         if not model:
-            raise ValueError(f"Unsupported LLM service for tools: {self.llm_service}")
-        self.chat_client = get_chat_client(self.llm_service, model=model)
+            raise ValueError(f"Unsupported chat service: {self.chat_service}")
+        self.chat_client = get_chat_client(self.chat_service, model=model)
 
     async def __aenter__(self):
         await self.connect()
@@ -58,7 +57,7 @@ class SpeakerMcpClient:
         env = os.environ.copy()
         server_script_path = Path(__file__).parent / "mcp_server.py"
         env["PYTHONPATH"] = server_script_path.parent
-        env["LLM_SERVICE"] = self.llm_service
+        env["CHAT_SERVICE"] = self.chat_service
         server_params = StdioServerParameters(
             command="uv",
             args=["run", "python", server_script_path],

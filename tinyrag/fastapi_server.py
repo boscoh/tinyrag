@@ -23,33 +23,47 @@ from slowapi.util import get_remote_address
 
 from tinyrag.config import chat_models, embed_models
 from tinyrag.mcp_client import SpeakerMcpClient
+from tinyrag.rag import RAGService
 
 logger = logging.getLogger(__name__)
 
 limiter = Limiter(key_func=get_remote_address)
-mcp_client: Optional[SpeakerMcpClient] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    global mcp_client
+    app.state.mcp_client: Optional[SpeakerMcpClient] = None
+    app.state.ready = False
 
-    llm_service = os.getenv("LLM_SERVICE")
-    if not llm_service:
-        logger.warning("LLM_SERVICE environment variable is not set, skipping MCP")
+    chat_service = os.getenv("CHAT_SERVICE")
+    embed_service = os.getenv("EMBED_SERVICE") or chat_service
+
+    if not chat_service:
+        logger.warning("CHAT_SERVICE not set, skipping MCP initialization")
+        app.state.ready = True
     else:
         try:
-            mcp_client = SpeakerMcpClient(llm_service=llm_service)
-            await mcp_client.connect()
+            # Pre-load embeddings during startup
+            logger.info(f"Pre-loading embeddings with {embed_service}...")
+            rag_service = RAGService(llm_service=embed_service)
+            await rag_service.connect()
+            logger.info("Embeddings loaded successfully")
+
+            # Initialize MCP client with chat service
+            logger.info(f"Initializing MCP client with {chat_service}...")
+            app.state.mcp_client = SpeakerMcpClient(chat_service=chat_service)
+            await app.state.mcp_client.connect()
             logger.info("MCP client initialized successfully")
+            app.state.ready = True
         except Exception as e:
-            logger.error(f"Failed to initialize MCP client: {e}")
+            logger.error(f"Failed to initialize during startup: {e}")
+            raise
 
     yield
 
-    if mcp_client:
+    if app.state.mcp_client:
         try:
-            await mcp_client.disconnect()
+            await app.state.mcp_client.disconnect()
         except Exception as e:
             logger.error(f"Error disconnecting MCP client: {e}")
 
@@ -71,19 +85,25 @@ def create_app() -> FastAPI:
         status = {
             "status": "ok",
         }
-        if mcp_client and mcp_client.tools:
-            status["mcp_tools"] = len(mcp_client.tools)
+        if app.state.mcp_client and app.state.mcp_client.tools:
+            status["mcp_tools"] = len(app.state.mcp_client.tools)
         return status
+
+    @app.get("/ready")
+    async def readiness_check() -> Dict[str, Any]:
+        return {"ready": getattr(app.state, "ready", False)}
 
     @app.get("/info")
     async def get_info() -> Dict[str, Any]:
         info = {}
-        if mcp_client and mcp_client.chat_client:
-            info["llm_service"] = mcp_client.llm_service
+        if app.state.mcp_client and app.state.mcp_client.chat_client:
+            info["chat_service"] = app.state.mcp_client.chat_service
             info["chat_model"] = getattr(
-                mcp_client.chat_client, "model", None
-            ) or chat_models.get(mcp_client.llm_service)
-            info["embed_model"] = embed_models.get(mcp_client.llm_service)
+                app.state.mcp_client.chat_client, "model", None
+            ) or chat_models.get(app.state.mcp_client.chat_service)
+            embed_service = os.getenv("EMBED_SERVICE") or os.getenv("CHAT_SERVICE")
+            info["embed_service"] = embed_service
+            info["embed_model"] = embed_models.get(embed_service)
         return info
 
     @app.get("/")
@@ -107,13 +127,18 @@ def create_app() -> FastAPI:
                 "data": <response from MCP client>
             }
         """
+        if not app.state.mcp_client:
+            raise HTTPException(status_code=503, detail="Chat service not initialized")
+
         try:
             history = (
                 [msg.model_dump() for msg in chat_request.history]
                 if chat_request.history
                 else None
             )
-            result = await mcp_client.process_query(chat_request.query, history=history)
+            result = await app.state.mcp_client.process_query(
+                chat_request.query, history=history
+            )
             return {
                 "id": str(uuid4()),
                 "role": "assistant",

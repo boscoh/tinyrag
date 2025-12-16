@@ -7,7 +7,7 @@ A lightweight Retrieval Augmented Generation (RAG) starter kit with FastAPI, MCP
 - **RAG with Semantic Search** - Retrieve relevant information using embeddings
 - **Multi-LLM Support** - OpenAI, AWS Bedrock, or local Ollama
 - **MCP Integration** - Use Model Context Protocol for tool integration
-- **FastAPI Server** - REST API with web interface
+- **Web UI** - Interactive chat interface
 - **Docker Ready** - Containerized deployment
 
 ## Quick Start
@@ -37,13 +37,50 @@ Supported `LLM_SERVICE` values:
 - `bedrock` - AWS Bedrock
 - `ollama` - Local Ollama instance
 
-### Run the Server
+## Usage
+
+### Start the Web UI
 
 ```bash
-uv run fastapi_server.py --port 8000
+uv run tinyrag ui
 ```
 
-The server will start and automatically open the browser at `http://localhost:8000`
+Options:
+- `--host` - Server host (default: 127.0.0.1)
+- `--port` - Server port (default: 8000)
+- `--no-browser` - Don't open browser automatically
+
+### Start the FastAPI Server
+
+```bash
+uv run tinyrag server
+```
+
+Options:
+- `--host` - Server host (default: 0.0.0.0)
+- `--port` - Server port (default: 8000)
+
+### Start the MCP Client
+
+```bash
+uv run tinyrag mcp
+```
+
+Interactive chat interface using MCP tools.
+
+### Build and Run Docker
+
+```bash
+uv run tinyrag docker
+```
+
+Builds and runs the Docker container with AWS credentials.
+
+### Show Version
+
+```bash
+uv run tinyrag version
+```
 
 ## API Endpoints
 
@@ -110,52 +147,16 @@ Process a query using the RAG system.
 - `CORS_OFF` - Disable CORS if set
 - `AWS_REGION` - AWS region (default: us-east-1)
 
-## Development
-
-### Test the MCP Client
-
-```bash
-uv run python mcp_client.py
-```
-
-This launches an interactive chat interface.
-
-### Generate Embeddings Manually
-
-```bash
-uv run python rag.py
-```
-
-## Docker
-
-### Build
-
-```bash
-docker build -t tinyrag .
-```
-
-### Run
-
-```bash
-docker run -p 8000:80 -e LLM_SERVICE=openai -e OPENAI_API_KEY=your-key tinyrag
-```
-
-Or with environment file:
-
-```bash
-docker run -p 8000:80 --env-file .env tinyrag
-```
-
 ## Project Structure
 
 ```
 tinyrag/
+├── cli.py               # Command-line interface
 ├── fastapi_server.py    # FastAPI application
 ├── mcp_server.py        # MCP server implementation
 ├── mcp_client.py        # MCP client with LLM integration
 ├── rag.py               # RAG service with embeddings
 ├── config.py            # Model configuration
-├── cli.py               # Command-line interface
 ├── index.html           # Web UI
 └── data/                # Speaker data and embeddings
 ```

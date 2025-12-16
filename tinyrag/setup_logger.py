@@ -4,14 +4,22 @@ from typing import Union
 from rich.console import Console
 from rich.logging import RichHandler
 
+_logging_configured = False
+
 
 def setup_logging(
     level: Union[int, str] = logging.INFO,
 ) -> None:
     """
     Set up logging with Rich formatter and switching off noisy modules. Call
-    as early as possible before AWS or other service calls.
+    as early as possible before AWS or other service calls. Safe to call multiple
+    times - only configures once.
     """
+    global _logging_configured
+    if _logging_configured:
+        return
+    _logging_configured = True
+
     if isinstance(level, str):
         level = getattr(logging, level.upper())
     rich_handler = RichHandler(

@@ -3,17 +3,14 @@
 import logging
 import os
 import sys
-from typing import Any, Dict
-
-from tinyrag.rag import RAGService
-from tinyrag.setup_logger import setup_logging
-
-setup_logging()
-
 from contextlib import asynccontextmanager
+from typing import Any, Dict
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+
+from tinyrag.rag import RAGService
+from tinyrag.setup_logger import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +92,7 @@ async def list_all_speakers() -> Dict[str, Any]:
 def main():
     """Main function to run the MCP server."""
     try:
+        setup_logging()
         logger.info("Starting MCP Server...")
         mcp.run()
     except Exception as e:

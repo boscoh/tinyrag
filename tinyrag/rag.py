@@ -1,4 +1,3 @@
-import asyncio
 import copy
 import csv
 import json
@@ -152,16 +151,8 @@ class RAGService:
         return self.speakers
 
 
-async def main():
+async def amain():
     """Run embeddings generation."""
-    from setup_logger import setup_logging
-
-    setup_logging()
     load_dotenv()
-    # RAGService builds embeddings on init via async context manager
     async with RAGService():
         pass
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

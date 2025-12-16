@@ -4,6 +4,7 @@ TinyRAG CLI - Command-line interface for TinyRAG
 """
 
 import asyncio
+import logging
 import os
 import threading
 import time
@@ -14,12 +15,59 @@ import typer
 import uvicorn
 
 from tinyrag.fastapi_server import create_app
-from tinyrag.mcp_client import amain
+from tinyrag.mcp_client import amain as mcp_amain
+from tinyrag.rag import amain as rag_amain
 from tinyrag.run_docker import main as run_docker_main
+from tinyrag.setup_logger import setup_logging
+
+setup_logging()
+
+logger = logging.getLogger(__name__)
+
+
+def wait_and_open_browser(check_url: str, open_url: str):
+    max_retries = 60
+    retry_count = 0
+
+    while retry_count < max_retries:
+        try:
+            response = httpx.get(check_url, timeout=1)
+            if response.status_code == 200:
+                webbrowser.open(open_url)
+                typer.echo(f"Opening {open_url} in browser...")
+                return
+        except Exception:
+            pass
+
+        time.sleep(0.5)
+        retry_count += 1
+
+    try:
+        webbrowser.open(open_url)
+        typer.echo(f"Opening {open_url} in browser (timeout waiting for ready)...")
+    except Exception as e:
+        typer.echo(f"Could not open browser: {e}")
+
 
 app = typer.Typer(
     name="tinyrag", help="TinyRAG - Tiny RAG starter kit", no_args_is_help=True
 )
+
+
+def run_server(host: str, port: int, open_browser: bool = False):
+    fastapi_app = create_app()
+
+    if open_browser:
+        base_url = f"http://{host}:{port}"
+        thread = threading.Thread(
+            target=wait_and_open_browser,
+            args=(f"{base_url}/ready", base_url),
+            daemon=True,
+        )
+        thread.start()
+
+    logger.info(f"Starting TinyRAG server on http://{host}:{port}")
+    uvicorn.run(fastapi_app, host=host, port=port, log_config=None)
 
 
 @app.command()
@@ -28,43 +76,8 @@ def ui(
     port: int = typer.Option(8000, help="Server port"),
     no_browser: bool = typer.Option(False, "--no-browser", help="Don't open browser"),
 ):
-    """Start the UI with FastAPI backend"""
-    fastapi_app = create_app()
-
-    if not no_browser:
-
-        def wait_and_open_browser():
-            base_url = f"http://{host}:{port}"
-            max_retries = 60
-            retry_count = 0
-            
-            while retry_count < max_retries:
-                try:
-                    response = httpx.get(f"{base_url}/ready", timeout=1)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data.get("ready"):
-                            webbrowser.open(base_url)
-                            typer.echo(f"Opening {base_url} in browser...")
-                            return
-                except Exception:
-                    pass
-                
-                time.sleep(0.5)
-                retry_count += 1
-            
-            # Timeout reached, open browser anyway
-            try:
-                webbrowser.open(base_url)
-                typer.echo(f"Opening {base_url} in browser (timeout waiting for ready)...")
-            except Exception as e:
-                typer.echo(f"Could not open browser: {e}")
-
-        thread = threading.Thread(target=wait_and_open_browser, daemon=True)
-        thread.start()
-
-    typer.echo(f"Starting TinyRAG UI on http://{host}:{port}")
-    uvicorn.run(fastapi_app, host=host, port=port)
+    """Start the UI with FastAPI backend and open browser"""
+    run_server(host, port, open_browser=not no_browser)
 
 
 @app.command()
@@ -73,9 +86,7 @@ def server(
     port: int = typer.Option(8000, help="Server port"),
 ):
     """Start the FastAPI server only"""
-    fastapi_app = create_app()
-    typer.echo(f"Starting FastAPI server on http://{host}:{port}")
-    uvicorn.run(fastapi_app, host=host, port=port)
+    run_server(host, port, open_browser=False)
 
 
 @app.command()
@@ -85,7 +96,13 @@ def mcp():
     if not service:
         typer.echo("Error: CHAT_SERVICE environment variable is not set")
         raise typer.Exit(1)
-    asyncio.run(amain(service))
+    asyncio.run(mcp_amain(service))
+
+
+@app.command()
+def rag():
+    """Generate embeddings for RAG"""
+    asyncio.run(rag_amain())
 
 
 @app.command()

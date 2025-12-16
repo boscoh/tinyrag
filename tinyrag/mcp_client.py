@@ -17,10 +17,8 @@ from microeval.chat_client import IChatClient, get_chat_client
 from path import Path
 
 from tinyrag.config import chat_models
-from tinyrag.setup_logger import setup_logging
 
 load_dotenv()
-setup_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -353,6 +351,3 @@ async def amain(service):
             print(f"\nResponse: {response}")
             conversation_history.append({"role": "user", "content": user_input})
             conversation_history.append({"role": "assistant", "content": response})
-
-
-

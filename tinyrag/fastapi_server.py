@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 """FastAPI server for xConf Assistant's MCP client API."""
 
-from tinyrag.setup_logger import setup_logging
-
-setup_logging()
-
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -12,9 +8,7 @@ from pathlib import Path
 from typing import Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
 
-import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -165,5 +159,3 @@ class ChatRequest(BaseModel):
 
 
 app = create_app()
-
-

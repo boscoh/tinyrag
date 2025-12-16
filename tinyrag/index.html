@@ -1,0 +1,552 @@
+<head>
+  <!-- avoid text rendering issues on various platforms -->
+  <meta charset="utf-8" />
+
+  <!-- prevent auto-zooming on mobile browsers -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <!-- Markdown renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/atom-one-light.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/highlight.min.js"></script>
+
+  <!-- Pug template compiler -->
+  <script src="https://pugjs.org/js/pug.js"></script>
+  <script>
+    window.pug = require("pug");
+
+    function renderHtmlFromPug(str) {
+      const lines = str.replace(/^\n/, "").split("\n");
+      const minIndent = Math.min(
+        ...lines.filter((l) => l.trim()).map((l) => l.match(/^\s*/)[0].length),
+      );
+      return pug.render(lines.map((l) => l.slice(minIndent)).join("\n"));
+    }
+
+    function renderMarkdown(text) {
+      const html = marked.parse(text);
+      return html;
+    }
+  </script>
+
+  <!-- Lodash -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <!-- Styles -->
+  <style>
+    /* Allow long text to wrap and scroll */
+    pre {
+      white-space: pre-wrap; /* Preserve whitespace but allow wrapping */
+      word-wrap: break-word; /* Break long words to fit container */
+      overflow-x: auto; /* Adds horizontal scroll if needed */
+    }
+
+    /* Smooth scrolling for all scrollable elements */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Smooth scrolling for the chat container */
+    .flex-grow-1.overflow-auto {
+      scroll-behavior: smooth;
+      transition: scroll-behavior 0.3s ease-in-out;
+    }
+
+    .messages-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 100%;
+    }
+
+    /* Message entry animation */
+    .message {
+      opacity: 0;
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Add staggered delay for messages */
+    .message {
+      animation-delay: 0.1s;
+    }
+    @keyframes fadeInOut {
+      0%,
+      100% {
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+    .thinking-dots span {
+      animation: fadeInOut 1.5s infinite ease-in-out;
+      opacity: 0.2;
+    }
+    .thinking-dots span:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    .thinking-dots span:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+
+    #main-column {
+      max-width: 650px;
+      margin: 0 auto;
+      padding-bottom: 120px;
+    }
+
+    body {
+      background-color: #ffffff;
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, sans-serif;
+    }
+
+    .message .card {
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      max-width: 85%;
+      word-wrap: break-word;
+    }
+
+    .message .card-body {
+      padding: 12px 16px;
+    }
+
+    .message .card-text {
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .message .card-text > *:first-child {
+      margin-top: 0 !important;
+    }
+
+    .message .card-text > *:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    .message .card-text p {
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+
+    .message .card.bg-info {
+      background-color: #007aff !important;
+      color: white;
+      margin-left: auto;
+    }
+
+    .message .card.bg-light {
+      background-color: #ffffff !important;
+      color: #1d1d1f;
+      margin-right: auto;
+      border: 1px solid #e5e5e7;
+    }
+
+    .message .card.border-danger {
+      background-color: #ff3b30 !important;
+      color: white;
+      border: none !important;
+    }
+
+    .message.mb-3 {
+      margin-bottom: 12px;
+    }
+
+    .flex-grow-1.overflow-auto {
+      background-color: #ffffff;
+      padding: 20px 16px;
+    }
+
+    .form-control {
+      border-radius: 12px;
+      border: 1px solid #e5e5e7;
+      padding: 12px 16px;
+      font-size: 15px;
+      resize: none;
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: #007aff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      outline: none;
+    }
+
+    .form-control:disabled {
+      background-color: #f5f5f5;
+      opacity: 0.6;
+    }
+
+    button.btn {
+      border-radius: 12px;
+      padding: 10px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    button.btn.btn-info {
+      background-color: #007aff;
+      color: white;
+    }
+
+    button.btn.btn-info:hover:not(:disabled) {
+      background-color: #0051d5;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    }
+
+    button.btn.btn-info:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 122, 255, 0.2);
+    }
+
+    button.btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .input-container {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 650px;
+      background-color: #ffffff;
+      border-top: 1px solid #e5e5e7;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin: 20px 0;
+    }
+
+    .clear-popup {
+      position: fixed;
+      bottom: 110px;
+      left: calc(50% - 320px);
+      background: white;
+      border: 1px solid #e5e5e7;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 12px 16px;
+      z-index: 1001;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .clear-popup p {
+      margin: 0;
+      color: #1d1d1f;
+    }
+
+    .clear-popup button {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .clear-popup .btn-confirm {
+      background-color: #ff3b30;
+      color: white;
+    }
+
+    .clear-popup .btn-confirm:hover {
+      background-color: #e63826;
+    }
+
+    .clear-popup .btn-cancel {
+      background-color: #e5e5e7;
+      color: #1d1d1f;
+    }
+
+    .clear-popup .btn-cancel:hover {
+      background-color: #d1d1d6;
+    }
+  </style>
+
+  <!-- Ky -->
+  <script type="module">
+    import ky from "https://unpkg.com/ky/distribution/index.js";
+    window.ky = ky;
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+<script>
+  // language=pug
+  let template = renderHtmlFromPug(`
+    .container-fluid.h-100
+      .row
+        .col-12.text-center
+          h1 {{ title }}
+          p.text-muted(v-if="subtitle") {{ subtitle }}
+        #main-column.col-12.d-flex.flex-column(style="height: calc(100vh - 100px);" ref="mainColumn")
+          .flex-grow-1.overflow-auto
+            .messages-container
+              .message.mb-3(v-for="(msg, index) in messages" :key="index" :class="'message-' + index")
+                .card(:class="getMessageClass(msg.role)")
+                  .card-body
+                    .card-text(v-html="renderMarkdown(msg.content)")
+              .message.mb-3(v-if="isLoading")
+                  .card.bg-light
+                    .card-body
+                      pre.card-text.text-muted
+                        span.thinking-dots
+                          span .
+                          span .
+                          span .
+        .input-container
+           .mb-2
+             textarea.form-control(v-model="userInput" @keyup.enter.exact.prevent="sendMessage" :disabled="isLoading" placeholder="Type your message here..." rows="3")
+           .d-flex.justify-content-between
+             button.btn.btn-outline-secondary(@click="showClearConfirm = true") Clear
+             button.btn.btn-info(@click="sendMessage" :disabled="isLoading")
+               span(v-if="!isLoading") Send
+               span(v-if="isLoading") Sending...
+           .clear-popup(v-if="showClearConfirm")
+             p Clear all messages?
+             button.btn-confirm(@click="confirmClearChat") Clear
+             button.btn-cancel(@click="showClearConfirm = false") Cancel
+  `);
+
+  const { createApp, ref, onMounted, nextTick, computed, watch } = Vue;
+
+  async function sendChatMessage(query, history, isLoading) {
+    const url = "/chat";
+    const jsonData = {
+      query,
+      mode: "assistant",
+      userToken: "",
+      history,
+    };
+    isLoading.value = true;
+    try {
+      return await ky
+        .post(url, {
+          json: jsonData,
+          headers: { "Content-Type": "application/json" },
+          timeout: 5 * 60000, // 5 minute
+        })
+        .json();
+    } catch (error) {
+      console.error("Chat message error:", error);
+      return {
+        status: "error",
+        message: error.message || "Failed to send chat message",
+      };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  function setup() {
+    const history = ref([]);
+    const userInput = ref("");
+    const messages = ref([]);
+    const isLoading = ref(false);
+    const mainColumn = ref(null);
+    const showClearConfirm = ref(false);
+
+    const scrollToBottom = (immediate = false) => {
+      nextTick(() => {
+        const container = document.querySelector(".flex-grow-1.overflow-auto");
+        if (container) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: immediate ? "auto" : "smooth",
+          });
+        }
+      });
+    };
+
+    watch(
+      () => messages.value,
+      () => {
+        scrollToBottom();
+      },
+      { deep: true },
+    );
+
+    const loadChatHistory = () => {
+      const saved = localStorage.getItem("chatHistory");
+      if (saved) {
+        try {
+          messages.value = JSON.parse(saved);
+        } catch (e) {
+          console.error("Error loading chat history:", e);
+          messages.value = [];
+        }
+      } else {
+        messages.value = [];
+      }
+    };
+
+    const saveChatHistory = () => {
+      localStorage.setItem("chatHistory", JSON.stringify(messages.value));
+    };
+
+    onMounted(() => {
+      loadChatHistory();
+      fetchInfo();
+      setTimeout(() => {
+        scrollToBottom(true);
+      }, 100);
+    });
+
+    watch(
+      () => messages.value,
+      () => {
+        saveChatHistory();
+      },
+      { deep: true },
+    );
+
+    const title = ref("AWS Conference Chatbot");
+    const subtitle = ref("");
+
+    const fetchInfo = async () => {
+      try {
+        const info = await ky.get("/info").json();
+        if (info.llm_service && info.chat_model) {
+          subtitle.value = `${info.llm_service} | chat: ${info.chat_model} | embed: ${info.embed_model}`;
+        }
+      } catch (e) {
+        console.error("Error fetching info:", e);
+      }
+    };
+
+    async function sendMessage() {
+      if (!userInput.value.trim() || isLoading.value) return;
+
+      const message = userInput.value.trim();
+      const userMessage = { role: "user", content: message };
+
+      messages.value.push(userMessage);
+
+      userInput.value = "";
+      isLoading.value = true;
+
+      try {
+        const response = await sendChatMessage(
+          message,
+          messages.value,
+          isLoading,
+        );
+        console.log(response);
+        if (response.status === "success") {
+          messages.value.push({ role: "assistant", content: response.data });
+          history.value.push([message, response.data]);
+        } else {
+          throw new Error(response.message || "Unknown error");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        messages.value.push({
+          role: "error",
+          content: `Error: ${error.message || "Failed to get response"}`,
+        });
+      } finally {
+        nextTick(scrollToBottom);
+        isLoading.value = false;
+      }
+    }
+
+    const getMessageClass = (role) => {
+      return {
+        "ms-auto bg-info text-white": role === "user",
+        "me-auto bg-light": role === "assistant",
+        "border-danger": role === "error",
+      };
+    };
+
+    const confirmClearChat = () => {
+      messages.value = [];
+      userInput.value = "";
+      localStorage.removeItem("chatHistory");
+      showClearConfirm.value = false;
+    };
+
+    return {
+      messages,
+      userInput,
+      isLoading,
+      sendMessage,
+      getMessageClass,
+      mainColumn,
+      title,
+      subtitle,
+      confirmClearChat,
+      renderMarkdown,
+      showClearConfirm,
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    createApp({ template, setup }).mount("#app");
+  });
+</script>

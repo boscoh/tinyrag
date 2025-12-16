@@ -86,7 +86,8 @@ def main():
 
     try:
         credentials = get_aws_credentials_from_profile(profile_name)
-        credentials["LLM_SERVICE"] = "bedrock"
+        credentials["CHAT_SERVICE"] = "bedrock"
+        credentials["EMBED_SERVICE"] = "bedrock"
         write_env_file(env_bedrock_file, credentials)
         print(f"Successfully wrote credentials to {env_bedrock_file}")
         print(f"Extracted {len(credentials)} environment variables")

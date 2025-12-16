@@ -3,10 +3,18 @@
 TinyRAG CLI - Command-line interface for TinyRAG
 """
 
+import asyncio
+import os
+import threading
 import time
 import webbrowser
 
 import typer
+import uvicorn
+
+from tinyrag.fastapi_server import create_app
+from tinyrag.mcp_client import amain
+from tinyrag.run_docker import main as run_docker_main
 
 app = typer.Typer(
     name="tinyrag", help="TinyRAG - Tiny RAG starter kit", no_args_is_help=True
@@ -20,14 +28,8 @@ def ui(
     no_browser: bool = typer.Option(False, "--no-browser", help="Don't open browser"),
 ):
     """Start the UI with FastAPI backend"""
-    import uvicorn
-
-    from tinyrag.fastapi_server import create_app
-
-    # Create app instance
     fastapi_app = create_app()
 
-    # Open browser after a brief delay to allow server startup
     if not no_browser:
 
         def open_browser():
@@ -38,8 +40,6 @@ def ui(
                 typer.echo(f"Opening {url} in browser...")
             except Exception as e:
                 typer.echo(f"Could not open browser: {e}")
-
-        import threading
 
         thread = threading.Thread(target=open_browser, daemon=True)
         thread.start()
@@ -54,10 +54,6 @@ def server(
     port: int = typer.Option(8000, help="Server port"),
 ):
     """Start the FastAPI server only"""
-    import uvicorn
-
-    from tinyrag.fastapi_server import create_app
-
     fastapi_app = create_app()
     typer.echo(f"Starting FastAPI server on http://{host}:{port}")
     uvicorn.run(fastapi_app, host=host, port=port)
@@ -66,11 +62,6 @@ def server(
 @app.command()
 def mcp():
     """Start MCP client"""
-    import asyncio
-    import os
-
-    from tinyrag.mcp_client import amain
-
     service = os.getenv("LLM_SERVICE", "openai")
     asyncio.run(amain(service))
 
@@ -78,9 +69,7 @@ def mcp():
 @app.command()
 def docker():
     """Build and run Docker container with AWS credentials"""
-    from tinyrag.run_docker import main
-
-    main()
+    run_docker_main()
 
 
 @app.command()

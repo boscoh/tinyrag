@@ -150,7 +150,6 @@ class SpeakerMcpClient:
         for msg in messages:
             msg_content = msg.get("content", "")
 
-            # Extract text from content (handles both list and string formats)
             if isinstance(msg_content, list):
                 content_parts = [
                     self._extract_content_text(item) for item in msg_content
@@ -159,7 +158,6 @@ class SpeakerMcpClient:
             else:
                 content_str = str(msg_content)
 
-            # Remove formatting: strip carriage returns, replace newlines with spaces, collapse multiple spaces
             content_str = content_str.replace("\r", "")
             content_str = re.sub(r"\s+", " ", content_str).strip()
 
@@ -358,11 +356,4 @@ async def amain(service):
             conversation_history.append({"role": "assistant", "content": response})
 
 
-if __name__ == "__main__":
-    service = os.getenv("LLM_SERVICE", "openai")  # "bedrock", "openai"
-    try:
-        asyncio.run(amain(service))
-    except KeyboardInterrupt:
-        print("\nGoodbye!")
-    except Exception as e:
-        print(f"\n\nUnexpected error: {e}")
+

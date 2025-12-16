@@ -64,7 +64,6 @@ def write_env_file(file_path: Path, credentials: dict):
 
 
 def main():
-    # Get project root (parent of tinyrag directory)
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
 

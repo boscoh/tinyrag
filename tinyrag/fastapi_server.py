@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """FastAPI server for xConf Assistant's MCP client API."""
 
-# IMPORTANT: Set up logging FIRST before any other imports that might trigger AWS calls
 from tinyrag.setup_logger import setup_logging
 
 setup_logging()
@@ -72,7 +71,6 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-    # Add routes
     @app.get("/health")
     async def health_check() -> Dict[str, Any]:
         status = {
@@ -196,31 +194,4 @@ def poll_and_open_browser(
     logger.warning(f"Server did not respond within {timeout_seconds} seconds")
 
 
-if __name__ == "__main__":
-    import argparse
 
-    parser = argparse.ArgumentParser(description="Run FastAPI server")
-    parser.add_argument(
-        "--port", type=int, default=80, help="Port to run the server on"
-    )
-    parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
-    args = parser.parse_args()
-    logger.info(f"Args: {args}")
-
-    if not is_in_container():
-        poller_thread = threading.Thread(
-            target=poll_and_open_browser, args=(args.port,), daemon=True
-        )
-        poller_thread.start()
-    else:
-        logger.info("Running in container, skipping browser auto-open")
-
-    uvicorn.run(
-        "fastapi_server:app",
-        host="0.0.0.0",
-        port=args.port,
-        reload=args.reload,
-        log_level="info",
-        # Use existing logging setup from setup_logger
-        access_log=False,  # Disable uvicorn access logs to avoid duplication
-    )

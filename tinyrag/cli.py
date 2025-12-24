@@ -22,14 +22,9 @@ app = App(name="tinyrag", help="TinyRAG - Tiny RAG starter kit")
 
 
 @app.command(name="ui-chat")
-def ui_chat(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
-    """Start the UI with FastAPI backend and open browser.
-
-    :param host: Server host.
-    :param port: Server port.
-    :param reload: Enable auto-reload on file changes.
-    """
-    run_server(host, port, open_browser=True, reload=reload)
+def ui_chat():
+    """Start the UI with FastAPI backend and open browser."""
+    run_server("127.0.0.1", 8000, open_browser=True, reload=False)
 
 
 @app.command
@@ -61,7 +56,7 @@ def rag():
 
 @app.command
 def search():
-    """Interactive search loop - query the RAG database directly."""
+    """Interactive search loop to query the RAG database."""
     asyncio.run(search_loop())
 
 

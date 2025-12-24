@@ -16,7 +16,7 @@ import uvicorn
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
-from microeval.chat_client import load_config
+from microeval.llm import load_config
 from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded

@@ -38,7 +38,6 @@ Supported `CHAT_SERVICE` values:
 
 Optional:
 - `EMBED_SERVICE` - Service for embeddings (defaults to `CHAT_SERVICE`)
-- `LLM_SERVICE` - Legacy variable, deprecated (use `CHAT_SERVICE` instead)
 
 ## Usage
 

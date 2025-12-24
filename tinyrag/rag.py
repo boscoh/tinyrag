@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 from dotenv import load_dotenv
-from microeval.chat_client import get_chat_client, load_config
+from microeval.llm import get_llm_client, load_config
 from path import Path
 from pydash import py_
 
@@ -29,7 +29,7 @@ class RAGService:
         if model is None:
             raise ValueError(f"Unsupported service: {self.llm_service}")
 
-        self.embed_client = get_chat_client(self.llm_service, model=model)
+        self.embed_client = get_llm_client(self.llm_service, model=model)
         self.embed_json = f"embeddings-{py_.kebab_case(model)}.json"
         logger.info(f"RAG LLM Service: '{llm_service}:{model}'")
 

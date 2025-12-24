@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from microeval.chat_client import IChatClient, get_chat_client, load_config
+from microeval.llm import SimpleLLMClient, get_llm_client, load_config
 from path import Path
 
 model_config = load_config()
@@ -35,11 +35,11 @@ class InfoAgent:
 
         self.tools: Optional[List[Dict[str, Any]]] = None
 
-        self.chat_client: Optional[IChatClient] = None
+        self.chat_client: Optional[SimpleLLMClient] = None
         model = chat_models.get(self.chat_service)
         if not model:
             raise ValueError(f"Unsupported chat service: {self.chat_service}")
-        self.chat_client = get_chat_client(self.chat_service, model=model)
+        self.chat_client = get_llm_client(self.chat_service, model=model)
 
     async def __aenter__(self):
         await self.connect()
@@ -93,7 +93,7 @@ class InfoAgent:
         self._mcp_session = None
 
     async def get_tools(self):
-        """Returns tool in format compatible with IChatClient.get_completion()"""
+        """Returns tool in format compatible with SimpleLLMClient.get_completion()"""
         response = await self._mcp_session.list_tools()
         return [
             {

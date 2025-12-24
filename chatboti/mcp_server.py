@@ -9,8 +9,8 @@ from typing import Any, Dict
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
-from tinyrag.rag import RAGService
-from tinyrag.logger import setup_logging
+from chatboti.rag import RAGService
+from chatboti.logger import setup_logging
 
 logger = logging.getLogger(__name__)
 

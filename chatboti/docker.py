@@ -65,7 +65,7 @@ def write_env_file(file_path: Path, config_vars: dict):
 
 
 def main():
-    image_name = "tinyrag"
+    image_name = "chatboti"
 
     script_dir = Path(__file__).parent
     project_root = script_dir.parent

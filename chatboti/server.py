@@ -22,8 +22,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from tinyrag.agent import InfoAgent
-from tinyrag.rag import RAGService
+from chatboti.agent import InfoAgent
+from chatboti.rag import RAGService
 
 model_config = load_config()
 chat_models = model_config["chat_models"]
@@ -206,7 +206,7 @@ def run_server(host: str, port: int, open_browser: bool = False, reload: bool = 
     logger.info(f"Starting TinyRAG server on http://{host}:{port}")
     if reload:
         uvicorn.run(
-            "tinyrag.server:app",
+            "chatboti.server:app",
             host=host,
             port=port,
             log_config=None,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TinyRAG CLI - Command-line interface for TinyRAG
+Chatboti CLI - Command-line interface for Chatboti
 """
 
 import asyncio
@@ -9,25 +9,25 @@ import sys
 
 from cyclopts import App
 
-from tinyrag.server import run_server
-from tinyrag.agent import amain as agent_amain
-from tinyrag.rag import build_embeddings as rag_amain, search_loop
-from tinyrag.docker import main as run_docker_main
-from tinyrag.logger import setup_logging
+from chatboti.server import run_server
+from chatboti.agent import amain as agent_amain
+from chatboti.rag import build_embeddings as rag_amain, search_loop
+from chatboti.docker import main as run_docker_main
+from chatboti.logger import setup_logging
 
 setup_logging()
 
 
-app = App(name="tinyrag", help="TinyRAG - Tiny RAG starter kit")
+app = App(name="chatboti", help="Chatboti - RAG starter kit")
 
 
-@app.command(name="ui-chat")
+@app.command(name="ui-chat", sort_key=0)
 def ui_chat():
     """Start the UI with FastAPI backend and open browser."""
     run_server("127.0.0.1", 8000, open_browser=True, reload=False)
 
 
-@app.command
+@app.command(sort_key=1)
 def server(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
     """Start the FastAPI server only.
 
@@ -38,7 +38,7 @@ def server(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
     run_server(host, port, open_browser=False, reload=reload)
 
 
-@app.command(name="cli-chat")
+@app.command(name="cli-chat", sort_key=2)
 def cli_chat():
     """Interactive chat with agent using MCP tools."""
     service = os.getenv("CHAT_SERVICE")
@@ -48,28 +48,28 @@ def cli_chat():
     asyncio.run(agent_amain(service))
 
 
-@app.command
+@app.command(sort_key=3)
 def rag():
     """Generate embeddings for RAG."""
     asyncio.run(rag_amain())
 
 
-@app.command
+@app.command(sort_key=4)
 def search():
     """Interactive search loop to query the RAG database."""
     asyncio.run(search_loop())
 
 
-@app.command
+@app.command(sort_key=5)
 def docker():
     """Build and run Docker container with AWS credentials."""
     run_docker_main()
 
 
-@app.command
+@app.command(sort_key=6)
 def version():
     """Show version."""
-    print("tinyrag 0.1.0")
+    print("chatboti 0.1.0")
 
 
 def main():

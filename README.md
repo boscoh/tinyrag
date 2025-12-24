@@ -1,14 +1,10 @@
-# TinyRAG
+# Chatboti
 
-A lightweight Retrieval Augmented Generation (RAG) starter kit with FastAPI, MCP (Model Context Protocol), and multi-LLM support.
+A simple chatbot example demonstrating how to build an AI agent that uses MCP (Model Context Protocol) to query a RAG database. Includes CLI, web UI, and Docker deployment options.
 
-## Features
+## What It Does
 
-- **RAG with Semantic Search** - Retrieve relevant information using embeddings
-- **Multi-LLM Support** - OpenAI, AWS Bedrock, or local Ollama
-- **MCP Integration** - Use Model Context Protocol for tool integration
-- **Web UI** - Interactive chat interface
-- **Docker Ready** - Containerized deployment
+An LLM-powered agent answers questions by searching a simple speaker database using semantic search. The agent uses MCP tools to find the best matching speaker for any topic.
 
 ## Quick Start
 
@@ -32,149 +28,71 @@ CHAT_SERVICE=openai
 OPENAI_API_KEY=your-api-key-here
 ```
 
-Supported `CHAT_SERVICE` values:
-- `openai` - OpenAI API
-- `bedrock` - AWS Bedrock
+Supported services: `openai`, `bedrock`
 
-Optional:
-- `EMBED_SERVICE` - Service for embeddings (defaults to `CHAT_SERVICE`)
+## Three Ways to Run
 
-## Usage
-
-### Start the Web UI
+### 1. Web UI
 
 ```bash
-uv run tinyrag ui
+uv run chatboti ui-chat
 ```
 
-Options:
-- `--host` - Server host (default: 127.0.0.1)
-- `--port` - Server port (default: 8000)
-- `--no-browser` - Don't open browser automatically
+Opens a browser with an interactive chat interface.
 
-### Start the FastAPI Server
+### 2. CLI Chat
 
 ```bash
-uv run tinyrag server
+uv run chatboti cli-chat
 ```
 
-Options:
-- `--host` - Server host (default: 0.0.0.0)
-- `--port` - Server port (default: 8000)
+Interactive terminal chat with the agent.
 
-### Start the Agent
+### 3. Docker
 
 ```bash
-uv run tinyrag chat
+uv run chatboti docker
 ```
 
-Interactive chat with agent using MCP tools. Requires `CHAT_SERVICE` environment variable.
+Builds and runs a Docker container. The `Dockerfile` is configured for CI/ECS deployment with:
+- Port `80`
+- Health endpoint at `/health`
 
-### Build and Run Docker
+## How It Works
 
-```bash
-uv run tinyrag docker
+```
+User Query → Agent (LLM) → MCP Tools → RAG Database → Response
 ```
 
-Builds and runs the Docker container with credentials from your `.env` file. Automatically handles OpenAI, AWS Bedrock, and Groq API keys.
-
-### Docker Deployment
-
-The `Dockerfile` in the project root is configured for CI deployment to typical ECS clusters (and similar container orchestration platforms):
-
-- **Port**: Exposes port `80`
-- **Health endpoint**: `/health` for container health checks
-- **Root Dockerfile**: Standard location for CI/CD pipelines
-
-### Show Version
-
-```bash
-uv run tinyrag version
-```
-
-## API Endpoints
-
-### `/` - Web Interface
-The main chat interface.
-
-### `/info` - Service Information
-Returns chat service, chat model, and embedding model details:
-```json
-{
-  "chat_service": "openai",
-  "chat_model": "gpt-4o",
-  "embed_service": "openai",
-  "embed_model": "text-embedding-3-small"
-}
-```
-
-### `/health` - Health Check
-Returns server status.
-
-### `/chat` - Chat API
-Process a query using the RAG system.
-
-**Request:**
-```json
-{
-  "query": "Find speakers on machine learning",
-  "mode": "assistant",
-  "history": []
-}
-```
-
-**Response:**
-```json
-{
-  "id": "uuid",
-  "role": "assistant",
-  "status": "success",
-  "data": "Response text"
-}
-```
-
-## Configuration
-
-### Supported Models
-
-**OpenAI:**
-- Chat: `gpt-4o`
-- Embeddings: `text-embedding-3-small`
-
-**AWS Bedrock:**
-- Chat: `amazon.nova-pro-v1:0`
-- Embeddings: `amazon.titan-embed-text-v2:0`
-
-### Environment Variables
-
-- `CHAT_SERVICE` - Service for chat/MCP operations (`openai` or `bedrock`) (required)
-- `EMBED_SERVICE` - Service for embeddings (defaults to `CHAT_SERVICE`)
-- `OPENAI_API_KEY` - OpenAI API key (if using OpenAI)
-- `AWS_PROFILE` - AWS profile (if using Bedrock)
-- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` - AWS credentials (alternative to profile)
-- `AWS_REGION` - AWS region (default: us-east-1)
-- `LLM_SERVICE` - Legacy variable (deprecated, use `CHAT_SERVICE`)
+1. **Agent** - An LLM that decides when to use tools
+2. **MCP Server** - Provides tools via Model Context Protocol
+3. **RAG Service** - Semantic search using embeddings on speaker data
 
 ## Project Structure
 
 ```
-tinyrag/
-├── cli.py               # Command-line interface
-├── server.py            # FastAPI application
-├── mcp_server.py        # MCP server implementation
-├── agent.py             # Agent with MCP tools and LLM integration
-├── rag.py               # RAG service with embeddings
-├── docker.py            # Docker build and run
-├── logger.py            # Logging configuration
-├── index.html           # Web UI
-└── data/                # Speaker data and embeddings
+chatboti/
+├── cli.py           # CLI commands
+├── agent.py         # LLM agent with MCP client
+├── mcp_server.py    # MCP server with RAG tools
+├── rag.py           # Embeddings and semantic search
+├── server.py        # FastAPI web server
+├── index.html       # Web UI
+└── data/            # Speaker database (CSV + embeddings)
 ```
 
-## Architecture
+## API Endpoints
 
-- **FastAPI Server** - REST API and web interface
-- **MCP Server** - Tool provider via STDIO
-- **Agent** - Tool caller with multi-step reasoning
-- **RAG Service** - Embeddings and semantic search
-- **Chat Client** - Simple async-only LLM interface with tool calling and embeddings
+- `/` - Web chat interface
+- `/chat` - Chat API endpoint
+- `/health` - Health check
+- `/info` - Service configuration
 
+## Environment Variables
+
+| Variable         | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| `CHAT_SERVICE`   | LLM provider: `openai` or `bedrock` (required)    |
+| `EMBED_SERVICE`  | Embedding provider (defaults to `CHAT_SERVICE`)   |
+| `OPENAI_API_KEY` | OpenAI API key                                    |
+| `AWS_PROFILE`    | AWS profile for Bedrock                           |

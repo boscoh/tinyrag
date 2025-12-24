@@ -268,6 +268,49 @@ wheels = [
 ]
 
 [[package]]
+name = "chatboti"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "aioboto3" },
+    { name = "cyclopts" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "mcp" },
+    { name = "microeval" },
+    { name = "numpy" },
+    { name = "ollama" },
+    { name = "openai" },
+    { name = "path" },
+    { name = "pydash" },
+    { name = "python-dotenv" },
+    { name = "pyyaml" },
+    { name = "rich" },
+    { name = "slowapi" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aioboto3", specifier = ">=15.2.0" },
+    { name = "cyclopts", specifier = ">=3.0.0" },
+    { name = "fastapi", specifier = ">=0.116.1" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "mcp", specifier = ">=1.18.0" },
+    { name = "microeval", specifier = ">=0.1.5" },
+    { name = "numpy", specifier = ">=2.3.4" },
+    { name = "ollama", specifier = ">=0.5.1" },
+    { name = "openai", specifier = ">=1.0.0" },
+    { name = "path", specifier = ">=17.1.0" },
+    { name = "pydash", specifier = ">=8.0.5" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "rich", specifier = ">=14.1.0" },
+    { name = "slowapi", specifier = ">=0.1.9" },
+    { name = "uvicorn", specifier = ">=0.35.0" },
+]
+
+[[package]]
 name = "click"
 version = "8.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -706,7 +749,7 @@ wheels = [
 [[package]]
 name = "microeval"
 version = "0.1.5"
-source = { directory = "../microeval" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioboto3" },
     { name = "boto3" },
@@ -723,23 +766,9 @@ dependencies = [
     { name = "ty" },
     { name = "uvicorn" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "aioboto3", specifier = ">=15.2.0" },
-    { name = "boto3", specifier = ">=1.35.0" },
-    { name = "cyclopts", specifier = ">=0.6.0" },
-    { name = "fastapi", specifier = ">=0.116.1" },
-    { name = "groq", specifier = ">=0.14.0" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "ollama", specifier = ">=0.5.1" },
-    { name = "openai", specifier = ">=1.0.0" },
-    { name = "path", specifier = ">=17.1.0" },
-    { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "rich", specifier = ">=14.1.0" },
-    { name = "ty", specifier = ">=0.0.4" },
-    { name = "uvicorn", specifier = ">=0.35.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/5a/be/7d68d540e998b99bb855074b533155e895bc09bd16eb1470db2aba56f7b5/microeval-0.1.5.tar.gz", hash = "sha256:ac02f0764228d760e1c380889bf3bfc15367d523a5339b9a60e43a48aceb4d2b", size = 50998, upload-time = "2025-12-24T22:18:18.629Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/5b/acb3f37b1ecfd16c39b97c1a810c3e224451ebbcf8e5c26ad474ae13d690/microeval-0.1.5-py3-none-any.whl", hash = "sha256:89787d7973e6e48b4f614fca7ec8812a563be2dc663cc0b66a2de6cb47639ce0", size = 47455, upload-time = "2025-12-24T22:18:16.91Z" },
 ]
 
 [[package]]
@@ -1364,49 +1393,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/de/1a/608df0b10b53b0beb96a37854ee05864d182ddd4b1156a22f1ad3860425a/starlette-0.49.3.tar.gz", hash = "sha256:1c14546f299b5901a1ea0e34410575bc33bbd741377a10484a54445588d00284", size = 2655031, upload-time = "2025-11-01T15:12:26.13Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a3/e0/021c772d6a662f43b63044ab481dc6ac7592447605b5b35a957785363122/starlette-0.49.3-py3-none-any.whl", hash = "sha256:b579b99715fdc2980cf88c8ec96d3bf1ce16f5a8051a7c2b84ef9b1cdecaea2f", size = 74340, upload-time = "2025-11-01T15:12:24.387Z" },
-]
-
-[[package]]
-name = "tinyrag"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "aioboto3" },
-    { name = "cyclopts" },
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "mcp" },
-    { name = "microeval" },
-    { name = "numpy" },
-    { name = "ollama" },
-    { name = "openai" },
-    { name = "path" },
-    { name = "pydash" },
-    { name = "python-dotenv" },
-    { name = "pyyaml" },
-    { name = "rich" },
-    { name = "slowapi" },
-    { name = "uvicorn" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aioboto3", specifier = ">=15.2.0" },
-    { name = "cyclopts", specifier = ">=3.0.0" },
-    { name = "fastapi", specifier = ">=0.116.1" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "mcp", specifier = ">=1.18.0" },
-    { name = "microeval", directory = "../microeval" },
-    { name = "numpy", specifier = ">=2.3.4" },
-    { name = "ollama", specifier = ">=0.5.1" },
-    { name = "openai", specifier = ">=1.0.0" },
-    { name = "path", specifier = ">=17.1.0" },
-    { name = "pydash", specifier = ">=8.0.5" },
-    { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "rich", specifier = ">=14.1.0" },
-    { name = "slowapi", specifier = ">=0.1.9" },
-    { name = "uvicorn", specifier = ">=0.35.0" },
 ]
 
 [[package]]

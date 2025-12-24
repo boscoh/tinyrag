@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tinyrag"
+name = "chatboti"
 version = "0.1.0"
-description = "Tiny RAG starter kit with FastAPI, MCP, and multiple LLM providers"
+description = "Raglet - RAG starter kit with FastAPI, MCP, and multiple LLM providers"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
@@ -41,17 +41,14 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/boscoh/tinyrag"
-Documentation = "https://github.com/boscoh/tinyrag#readme"
-Repository = "https://github.com/boscoh/tinyrag.git"
-Issues = "https://github.com/boscoh/tinyrag/issues"
+Homepage = "https://github.com/boscoh/chatboti"
+Documentation = "https://github.com/boscoh/chatboti#readme"
+Repository = "https://github.com/boscoh/chatboti.git"
+Issues = "https://github.com/boscoh/chatboti/issues"
 
 [project.scripts]
-tinyrag = "tinyrag.cli:main"
+chatboti = "chatboti.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["tinyrag"]
-
-[tool.uv.sources]
-microeval = { path = "../microeval" }
+packages = ["chatboti"]
 
